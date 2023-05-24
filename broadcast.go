@@ -9,7 +9,7 @@ import (
 
 type pkgReg struct {
 	registered map[int]struct{}
-	out_pkgs   []*model.Response
+	out_pkgs   []model.Response
 }
 
 func (h *WebSocket) StartBroadcasting(in <-chan *model.Request) {
@@ -61,9 +61,9 @@ func (h *WebSocket) StartBroadcasting(in <-chan *model.Request) {
 					data, exist := pkg_reg[rq.User.Token]
 					if !exist {
 						data.registered = make(map[int]struct{})
-						data.out_pkgs = make([]*model.Response, 0)
+						data.out_pkgs = make([]model.Response, 0)
 					}
-					data.out_pkgs = append(data.out_pkgs, pkg)
+					data.out_pkgs = append(data.out_pkgs, *pkg)
 					pkg_reg[rq.User.Token] = data
 				}
 
@@ -83,7 +83,7 @@ func (h *WebSocket) StartBroadcasting(in <-chan *model.Request) {
 	}()
 }
 
-func (h *WebSocket) respondRequest(user *model.User, responses []*model.Response) {
+func (h *WebSocket) respondRequest(user *model.User, responses []model.Response) {
 
 	select {
 	case user.Packages <- responses:

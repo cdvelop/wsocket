@@ -22,13 +22,13 @@ func TestPrivateMessage(t *testing.T) {
 	//....
 
 	// creamos solicitante area A
-	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'a', AccessLevel: 2, Packages: make(chan []*model.Response), LastConnection: time.Time{}}
+	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'a', AccessLevel: 2, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
 	// creamos solicitante area A
-	B := model.User{Token: "TOKEN_B", Ip: "", Name: "Julio", Area: 'a', AccessLevel: 3, Packages: make(chan []*model.Response), LastConnection: time.Time{}}
+	B := model.User{Token: "TOKEN_B", Ip: "", Name: "Julio", Area: 'a', AccessLevel: 3, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
 	// creamos intruso area C
-	C := model.User{Token: "TOKEN_C", Ip: "", Name: "Espina", Area: 'c', AccessLevel: 4, Packages: make(chan []*model.Response), LastConnection: time.Time{}}
+	C := model.User{Token: "TOKEN_C", Ip: "", Name: "Espina", Area: 'c', AccessLevel: 4, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
 	go chatHandlerPrivateMessage(hub.REQUESTS_IN, hub.REQUESTS_OUT)
 
@@ -40,18 +40,18 @@ func TestPrivateMessage(t *testing.T) {
 	defer server.Close()
 
 	// Conectar al servidor con el requirente A
-	CONN_A := newConn(&A, A.Token, origin, server)
+	USER_A := newConn(&A, A.Token, origin, server)
 
 	// Conectar al servidor con el requirente B
-	CONN_B := newConn(&B, B.Token, origin, server)
+	USER_B := newConn(&B, B.Token, origin, server)
 
 	// Conectar al servidor con el intruso C
-	CONN_C := newConn(&C, C.Token, origin, server)
+	USER_C := newConn(&C, C.Token, origin, server)
 
 	// Enviar un mensaje de "hola Maria" desde el requirente B al requirente A id secreto chat 111
-	message := model.Request{
+	MSG_TO_USER_A := model.Request{
 		User: &B,
-		Packages: []*model.Response{
+		Packages: []model.Response{
 			{
 				Type:    "create",
 				Object:  "chat",
@@ -66,36 +66,39 @@ func TestPrivateMessage(t *testing.T) {
 		},
 	}
 
-	sendMessage(CONN_B, &message)
+	sendMessage(USER_B, &MSG_TO_USER_A) //requirente B envía mensaje
 
 	// respuesta A
-	replies_A, err := wsReply(CONN_A)
+	REPLIES_USER_A, err := wsReply(USER_A)
 	if err != nil {
 		log.Fatal("No llego mensaje al destinatario A ", err)
 	}
-	for _, reply_A := range replies_A {
+	for i, REPLY_A := range REPLIES_USER_A {
 
-		if reply_A.Message != "" {
-			log.Fatal("error llego mensaje confirmación a reply_A:", reply_A.Message)
+		if i > 0 {
+			log.Fatal("se esperaba solo un mensaje")
+		}
+		if REPLY_A.Data[i]["message"] != "hola Maria" {
+			log.Fatal("se esperaba mensaje hola Maria llego:", REPLY_A.Data[i])
 		}
 	}
 
 	// respuesta B
-	replies_B, err := wsReply(CONN_B)
+	replies_B, err := wsReply(USER_B)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, reply_B := range replies_B {
 
 		if reply_B.Message != expected_private_msg {
-			log.Fatal("No me llego mensaje de ok")
+			log.Fatalf("Se esperaba mensaje de ok llego: [%v]", reply_B.Message)
 		}
 	}
 
 	// fmt.Println("reply_B:", reply_B)
 
 	// respuesta C
-	_, err = wsReply(CONN_C)
+	_, err = wsReply(USER_C)
 	if err == nil {
 		log.Fatal("ERROR MENSAJE LLEGO A: ", C.Name, " Y NO TIENE EL MISMO NIVEL")
 	}
@@ -114,28 +117,27 @@ func chatHandlerPrivateMessage(in <-chan *model.Request, out chan<- *model.Reque
 	select {
 	case rq := <-in:
 
-		for _, pkg := range rq.Packages {
+		for i, newPkg := range rq.Packages {
 
-			switch pkg.Type {
+			switch newPkg.Type {
 			case "create":
 				// fmt.Println("PROCESANDO SOLICITUD: ", pkg.Type)
 
 				// **** 1-
 				// añadimos data x a la solicitud u hacemos otro proceso
-				pkg.Data = append(pkg.Data, map[string]string{"more_data": "xxxdata"})
+				newPkg.Data = append(newPkg.Data, map[string]string{"more_data": "xxxdata"})
 
-				dest := room[pkg.Data[0]["destination"]]
+				dest := room[newPkg.Data[0]["destination"]]
 
 				// log.Println("DESTINO: ", dest)
 				// añadimos destinatario
-				pkg.Recipients = append(pkg.Recipients, dest)
+				newPkg.Recipients = append(newPkg.Recipients, dest)
 
 				// quitamos al emisor en la respuesta
-				pkg.SkipMeInResponse = true
+				newPkg.SkipMeInResponse = true
 
-				//no es necesario agregar la respuesta si solo se envía a un destinatario ??
-				// pkg.Packages = append(pkg.Packages, &pkg.Response)
-
+				// SETEAR RESPUESTA:
+				rq.Packages[i] = newPkg
 				// la retornamos al destinatario
 				out <- rq
 
@@ -143,10 +145,10 @@ func chatHandlerPrivateMessage(in <-chan *model.Request, out chan<- *model.Reque
 				// creamos un nuevo rq para responder a emisor del mensaje
 				resp := model.Request{
 					User: rq.User,
-					Packages: []*model.Response{{
-						Type:             pkg.Type,
-						Object:           pkg.Object,
-						Module:           pkg.Module,
+					Packages: []model.Response{{
+						Type:             newPkg.Type,
+						Object:           newPkg.Object,
+						Module:           newPkg.Module,
 						Message:          expected_private_msg,
 						Data:             []map[string]string{},
 						SkipMeInResponse: false,

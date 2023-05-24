@@ -18,20 +18,20 @@ func markPackages(rq *model.Request) (pkg_error map[int]*model.Response, pkg_pub
 		if strings.Contains(strings.ToLower(pkg.Type), "err") {
 			// log.Println("marcación error destinatario el emisor")
 			pkg.Type = "error"
-			pkg_error[id] = pkg
-
+			pkg_error[id] = &pkg
+			rq.Packages[id] = pkg //seteamos el valor de error estándar
 		} else {
 
 			if len(pkg.Recipients) != 0 {
 				// log.Println("marcación privada destinatarios específicos")
-				pkg_private[id] = pkg
+				pkg_private[id] = &pkg
 
 			} else if pkg.TargetArea { //
 				// log.Println("marcación por Area")
-				pkg_area[id] = pkg
+				pkg_area[id] = &pkg
 			} else {
 				// log.Println("marcación pública")
-				pkg_public[id] = pkg
+				pkg_public[id] = &pkg
 
 			}
 		}

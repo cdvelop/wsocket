@@ -14,14 +14,14 @@ func addPackage(user *model.User, rq *model.Request, id int, pkg *model.Response
 		data, exist := (*pkg_reg)[user.Token]
 		if !exist { // inicializamos las variables si no existe el usuario
 			data.registered = make(map[int]struct{})
-			data.out_pkgs = make([]*model.Response, 0)
+			data.out_pkgs = make([]model.Response, 0)
 		}
 
 		if _, exist := data.registered[id]; !exist {
 
 			prepareMessage(user, rq, pkg)
 
-			data.out_pkgs = append(data.out_pkgs, pkg)
+			data.out_pkgs = append(data.out_pkgs, *pkg)
 			data.registered[id] = struct{}{}
 
 			(*pkg_reg)[user.Token] = data

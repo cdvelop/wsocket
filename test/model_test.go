@@ -4,16 +4,16 @@ import (
 	"github.com/cdvelop/model"
 )
 
-var objects = map[string]model.Object{
-	"user": {
-		Name: "Usuario",
+var objects = []model.Object{
+	{
+		Name: "user",
 		Fields: []model.Field{
 			{Name: "name"},
 			{Name: "email"},
 			{Name: "phone"},
 		},
 	},
-	"chat": {
+	{
 		Name: "chat",
 		Fields: []model.Field{
 			{Name: "message"},

@@ -23,7 +23,7 @@ func (h *WebSocket) listen(u *model.User, wg *sync.WaitGroup, wsConn *websocket.
 			// si esta todo correcto asignamos el puntero del requirente a la solicitud
 			var rq = model.Request{
 				User: u,
-				Packages: []*model.Response{
+				Packages: []model.Response{
 					{
 						Type:             "error", //inicializamos por defecto en caso de error
 						Object:           "",

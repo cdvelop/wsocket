@@ -8,8 +8,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func wsReply(ws *websocket.Conn) ([]*model.Response, error) {
-	var out []*model.Response
+func wsReply(ws *websocket.Conn) ([]model.Response, error) {
+	var out []model.Response
 
 	ws.SetReadDeadline(time.Now().Add(time.Millisecond * 10))
 	_, msg, err := ws.ReadMessage()

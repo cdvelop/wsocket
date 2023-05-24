@@ -20,10 +20,10 @@ func TestRespuestaError(t *testing.T) {
 	hub = wsocket.New(&objects, 1024, 1, origin)
 
 	// creamos solicitante A nivel acceso 3
-	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'v', AccessLevel: 3, Packages: make(chan []*model.Response), LastConnection: time.Time{}}
+	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'v', AccessLevel: 3, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
 	// creamos solicitante B nivel acceso 3
-	B := model.User{Token: "TOKEN_B", Ip: "", Name: "Julio", Area: 'v', AccessLevel: 3, Packages: make(chan []*model.Response), LastConnection: time.Time{}}
+	B := model.User{Token: "TOKEN_B", Ip: "", Name: "Julio", Area: 'v', AccessLevel: 3, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
 	go errorHandlerPrivateMessage(hub.REQUESTS_IN, hub.REQUESTS_OUT)
 
@@ -43,7 +43,7 @@ func TestRespuestaError(t *testing.T) {
 	// enviar mensaje sin nada
 	message := model.Request{
 		User: &A,
-		Packages: []*model.Response{
+		Packages: []model.Response{
 			{
 				Type:             "",
 				Object:           "chat",
@@ -78,7 +78,7 @@ func TestRespuestaError(t *testing.T) {
 	// segundo intento
 	message = model.Request{
 		User: &A,
-		Packages: []*model.Response{
+		Packages: []model.Response{
 			{
 				Type:             "ok",
 				Object:           "chat",
@@ -116,11 +116,12 @@ func errorHandlerPrivateMessage(in <-chan *model.Request, out chan<- *model.Requ
 
 	select {
 	case rq := <-in:
-		for _, pkg := range rq.Packages {
+		for i, newPkg := range rq.Packages {
 
 			// respondemos como error mal escrito
-			pkg.Type = "Errors"
+			newPkg.Type = "Errors"
 			// fmt.Println("PROCESANDO SOLICITUD: ", rq.Type)
+			rq.Packages[i] = newPkg
 
 			out <- rq
 		}
