@@ -26,7 +26,7 @@ func (h *WebSocket) listen(u *model.User, wg *sync.WaitGroup, wsConn *websocket.
 				Packages: []model.Response{
 					{
 						Type:             "error", //inicializamos por defecto en caso de error
-						Object:           "",
+						Object:           "error",
 						Module:           "",
 						Message:          "",
 						Data:             []map[string]string{},
@@ -36,7 +36,7 @@ func (h *WebSocket) listen(u *model.User, wg *sync.WaitGroup, wsConn *websocket.
 				},
 			}
 
-			messageType, messageData, err := wsConn.ReadMessage()
+			data_type, new_data_in, err := wsConn.ReadMessage()
 			if err != nil {
 				// log.Printf("CIERRE DE CONEXIÓN IP: %v DETALLE: %v\n", ip_ws_request, err)
 				// h.NotifyListeners(h.SessionChange("login_out", &a))
@@ -45,44 +45,24 @@ func (h *WebSocket) listen(u *model.User, wg *sync.WaitGroup, wsConn *websocket.
 				break
 			}
 
-			switch messageType {
+			switch data_type {
 
 			case 1: // MENSAJE JSON TEXTO
-				// log.Printf("MENSAJE: TEXTO %d\n", messageType)
+				// log.Printf("MENSAJE: TEXTO %d\n", data_type)
 
-				rq.Packages, err = h.DecodeResponses(messageData)
-				if err != nil {
-					rq.Packages[0].Message = err.Error()
-					u.Packages <- rq.Packages
-					break
-				}
+				rq.Packages = h.DecodeResponses(new_data_in)
 
-				if rq.Packages[0].Type == "" || rq.Packages[0].Object == "" || rq.Packages[0].Module == "" || len(rq.Packages[0].Data) == 0 {
+				// fmt.Println(">>> MENSAJE EN SERVIDOR ", rq)
 
-					rq.Packages[0].Type = "error"
-					rq.Packages[0].Message = "error solicitud sin información"
-					// fmt.Println(rq.Message)
-					u.Packages <- rq.Packages
-					break
-				}
+				h.REQUESTS_IN <- &rq
 
-				if rq.Token == u.Token {
-					// fmt.Println(">>> MENSAJE EN SERVIDOR ", rq.Message)
+			case 2:
+				// fmt.Println(">>> MENSAJE BINARIO")
 
-					h.REQUESTS_IN <- &rq
-
-				} else {
-					// fmt.Println(">>> LLAVE CONEXIÓN DIFERENTE <<<")
-					rq.Packages[0].Type = "error"
-					rq.Packages[0].Message = "Error Acceso no autorizado"
-					u.Packages <- rq.Packages
-					wsConn.Close()
-				}
-
-			case 2: // MENSAJE BINARIO
 				rq.Packages[0].Type = "error"
 				rq.Packages[0].Message = "Error Archivos Binario no soportado"
 				u.Packages <- rq.Packages
+
 			}
 
 		} else {

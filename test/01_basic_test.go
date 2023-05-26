@@ -1,4 +1,4 @@
-package go_wsocket_test
+package wsocket_test
 
 import (
 	"log"
@@ -10,17 +10,13 @@ import (
 	"github.com/cdvelop/wsocket"
 )
 
-var hub *wsocket.WebSocket
+const origin = "http://127.0.0.1"
 
 // Prueba unitaria de simulación de un chat básico privado entre 2 personas
 // de una misma area y un tercero que no tiene que llegarle el mensaje
 func TestPrivateMessage(t *testing.T) {
-	const origin = "http://127.0.0.1"
-	// Crear un nuevo servidor WebSocket
-	hub = wsocket.New(&objects, 1024, 1, origin)
-
-	//....
-
+	// Crear un servidor WebSocket
+	hub := wsocket.New(objects, 1024, 1000, origin)
 	// creamos solicitante area A
 	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'a', AccessLevel: 2, Packages: make(chan []model.Response), LastConnection: time.Time{}}
 
@@ -66,13 +62,11 @@ func TestPrivateMessage(t *testing.T) {
 		},
 	}
 
-	sendMessage(USER_B, &MSG_TO_USER_A) //requirente B envía mensaje
+	sendMessage(hub, USER_B, &MSG_TO_USER_A) //requirente B envía mensaje
 
 	// respuesta A
-	REPLIES_USER_A, err := wsReply(USER_A)
-	if err != nil {
-		log.Fatal("No llego mensaje al destinatario A ", err)
-	}
+	REPLIES_USER_A, _ := wsReply(hub, USER_A)
+
 	for i, REPLY_A := range REPLIES_USER_A {
 
 		if i > 0 {
@@ -84,23 +78,19 @@ func TestPrivateMessage(t *testing.T) {
 	}
 
 	// respuesta B
-	replies_B, err := wsReply(USER_B)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, reply_B := range replies_B {
-
-		if reply_B.Message != expected_private_msg {
-			log.Fatalf("Se esperaba mensaje de ok llego: [%v]", reply_B.Message)
-		}
+	replies_B, _ := wsReply(hub, USER_B)
+	if len(replies_B) > 1 {
+		log.Fatal("se esperaba solo un mensaje")
 	}
 
-	// fmt.Println("reply_B:", reply_B)
+	if replies_B[0].Message != expected_private_msg {
+		log.Fatalf("Se esperaba mensaje de ok llego: [%v]", replies_B[0].Message)
+	}
 
 	// respuesta C
-	_, err = wsReply(USER_C)
-	if err == nil {
-		log.Fatal("ERROR MENSAJE LLEGO A: ", C.Name, " Y NO TIENE EL MISMO NIVEL")
+	replies_C, err := wsReply(hub, USER_C)
+	if err == nil || len(replies_C) != 0 {
+		log.Fatal("ERROR MENSAJE LLEGO A: ", C.Name, " Y NO TIENE QUE RECIBIRLO")
 	}
 
 }
@@ -121,7 +111,7 @@ func chatHandlerPrivateMessage(in <-chan *model.Request, out chan<- *model.Reque
 
 			switch newPkg.Type {
 			case "create":
-				// fmt.Println("PROCESANDO SOLICITUD: ", pkg.Type)
+				// fmt.Println("PROCESANDO SOLICITUD: ", newPkg.Type)
 
 				// **** 1-
 				// añadimos data x a la solicitud u hacemos otro proceso

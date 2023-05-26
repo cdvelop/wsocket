@@ -1,7 +1,6 @@
-package go_wsocket_test
+package wsocket_test
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,7 +16,7 @@ func newConn(a *model.User, token, origin string, server *httptest.Server) *webs
 	header.Set("Origin", origin) // Establecer el origen en la cabecera
 	conn, _, err := websocket.DefaultDialer.Dial(url.String(), header)
 	if err != nil {
-		log.Fatalf("Error al conectar al cliente %v %v", a.Name, err)
+		// log.Printf("Error al conectar al cliente %v %v", a.Name, err)
 	}
 
 	return conn

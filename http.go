@@ -7,11 +7,9 @@ import (
 )
 
 func (h *WebSocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	// Limitar la concurrencia a x conexiones simultáneas ej 100
-	// concurrencyLimiter := make(chan struct{}, h.concurrency_limiter)
-	// concurrencyLimiter <- struct{}{}
-	// defer func() { <-concurrencyLimiter }()
+	// Intentar adquirir un valor del semáforo antes de procesar la solicitud
+	h.concurrency_limiter <- struct{}{}
+	defer func() { <-h.concurrency_limiter }()
 
 	token := r.Header.Get("Authorization")
 	// fmt.Println("TOKEN ENVIADO: ", token)

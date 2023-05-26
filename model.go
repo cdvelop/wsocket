@@ -12,7 +12,8 @@ import (
 type WebSocket struct {
 	upgrader *websocket.Upgrader
 
-	concurrency_limiter int // Limitar la concurrencia de conexiones simultáneas ej 100
+	// Limitar la concurrencia de conexiones simultáneas ej 100
+	concurrency_limiter chan struct{}
 	// el mutex para proteger escritura de mapa de solicitantes
 	lockUsers sync.RWMutex
 
@@ -28,5 +29,9 @@ type WebSocket struct {
 	// canal que avisa el cierre de las conexiones
 	CLOSED_CONNECTION chan *model.User
 
-	cutkey.Add
+	cutkey.Cut
+}
+
+type BinaryHandler interface {
+	BinaryHandler(data_in []byte, out chan<- *model.Request)
 }

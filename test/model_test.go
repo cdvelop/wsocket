@@ -1,10 +1,10 @@
-package go_wsocket_test
+package wsocket_test
 
 import (
 	"github.com/cdvelop/model"
 )
 
-var objects = []model.Object{
+var objects = []*model.Object{
 	{
 		Name: "user",
 		Fields: []model.Field{

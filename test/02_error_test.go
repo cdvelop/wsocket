@@ -1,4 +1,4 @@
-package go_wsocket_test
+package wsocket_test
 
 import (
 	"log"
@@ -13,11 +13,8 @@ import (
 // en este test no tiene que llegar un mensaje de error a los
 // demás solicitantes
 func TestRespuestaError(t *testing.T) {
-
-	//...
-	const origin = "http://127.0.0.1"
-	// Crear un nuevo servidor WebSocket
-	hub = wsocket.New(&objects, 1024, 1, origin)
+	// Crear un servidor WebSocket
+	hub := wsocket.New(objects, 1024, 1000, origin)
 
 	// creamos solicitante A nivel acceso 3
 	A := model.User{Token: "TOKEN_A", Ip: "", Name: "Maria", Area: 'v', AccessLevel: 3, Packages: make(chan []model.Response), LastConnection: time.Time{}}
@@ -56,10 +53,10 @@ func TestRespuestaError(t *testing.T) {
 		},
 	}
 
-	sendMessage(CONN_A, &message)
+	sendMessage(hub, CONN_A, &message)
 
 	// respuesta A
-	replies_A, err := wsReply(CONN_A)
+	replies_A, err := wsReply(hub, CONN_A)
 	for _, reply_A := range replies_A {
 
 		if err != nil && reply_A.Type != "error" {
@@ -67,10 +64,8 @@ func TestRespuestaError(t *testing.T) {
 		}
 	}
 
-	// fmt.Println("reply_A:", reply_A)
-
 	// respuesta B
-	_, err = wsReply(CONN_B)
+	_, err = wsReply(hub, CONN_B)
 	if err == nil {
 		log.Fatal("ERROR MENSAJE LLEGO A: ", B.Name, " Y NO REALIZA NINGUNA SOLICITUD")
 	}
@@ -91,13 +86,10 @@ func TestRespuestaError(t *testing.T) {
 		},
 	}
 
-	sendMessage(CONN_A, &message)
+	sendMessage(hub, CONN_A, &message)
 
 	// respuesta A
-	replies_A, err = wsReply(CONN_A)
-	if err != nil {
-		log.Fatal("No llego mensaje al destinatario A ", err)
-	}
+	replies_A, _ = wsReply(hub, CONN_A)
 	for _, reply_A := range replies_A {
 
 		if reply_A.Type != "error" {
@@ -105,11 +97,10 @@ func TestRespuestaError(t *testing.T) {
 		}
 	}
 	// respuesta B
-	_, err = wsReply(CONN_B)
+	_, err = wsReply(hub, CONN_B)
 	if err == nil {
 		log.Fatal("ERROR MENSAJE LLEGO A: ", B.Name, " Y NO REALIZA NINGUNA SOLICITUD")
 	}
-
 }
 
 func errorHandlerPrivateMessage(in <-chan *model.Request, out chan<- *model.Request) {

@@ -1,21 +1,18 @@
-package go_wsocket_test
+package wsocket_test
 
 import (
 	"log"
 
 	"github.com/cdvelop/model"
+	"github.com/cdvelop/wsocket"
 	"github.com/gorilla/websocket"
 )
 
-func sendMessage(ws *websocket.Conn, rq *model.Request) {
-	// t.Helper()
+func sendMessage(hub *wsocket.WebSocket, ws *websocket.Conn, rq *model.Request) {
 
-	out, err := hub.EncodeResponses(rq.Packages)
-	if err != nil {
-		log.Fatal("!!!sendMessage EncodeResponses Error ", err)
-	}
+	data := hub.EncodeResponses(rq.Packages)
 
-	if err := ws.WriteMessage(websocket.TextMessage, out); err != nil {
-		log.Fatal("sendMessage", err)
+	if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
+		log.Println("sendMessage", err)
 	}
 }

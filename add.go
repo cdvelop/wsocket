@@ -13,7 +13,7 @@ import (
 // allowed_origins ej: "http://localhost", "http://127.0.0.1", "http://example.com", "https://example.com"
 // buffer_size ej: 1024
 // concurrency_max Limitar la concurrencia de conexiones simultáneas ej 100
-func New(models *[]model.Object, buffer_size, concurrency_max int, allowed_origins ...string) *WebSocket {
+func New(models []*model.Object, buffer_size, concurrency_max int, allowed_origins ...string) *WebSocket {
 
 	ws := WebSocket{
 		upgrader: &websocket.Upgrader{
@@ -31,16 +31,14 @@ func New(models *[]model.Object, buffer_size, concurrency_max int, allowed_origi
 				return false
 			},
 		},
-		concurrency_limiter: concurrency_max,
+		concurrency_limiter: make(chan struct{}, concurrency_max), // Tamaño máximo de conexiones simultáneas ej 100
 		lockUsers:           sync.RWMutex{},
 		users:               map[string]*model.User{},
 		REQUESTS_IN:         make(chan *model.Request),
 		REQUESTS_OUT:        make(chan *model.Request),
 		CLOSED_CONNECTION:   make(chan *model.User),
 
-		Add: cutkey.Add{
-			Objects: models,
-		},
+		Cut: *cutkey.Add(models...),
 	}
 
 	ws.StartBroadcasting(ws.REQUESTS_OUT)

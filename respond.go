@@ -12,13 +12,7 @@ func (h *WebSocket) respond(a *model.User, wg *sync.WaitGroup, wsConn *websocket
 	defer wg.Done()
 	for resp := range a.Packages {
 
-		out, err := h.EncodeResponses(resp)
-		if err != nil {
-			log.Printf("!!! EncodeResponses User: %v Error: %v\n", a.Name, err)
-			break
-		}
-
-		err = wsConn.WriteMessage(websocket.TextMessage, out)
+		err := wsConn.WriteMessage(websocket.TextMessage, h.EncodeResponses(resp))
 		if err != nil {
 			log.Printf("!!! WriteMessage User: %v Error: %v\n", a.Name, err)
 			break
