@@ -13,7 +13,7 @@ import (
 // allowed_origins ej: "http://localhost", "http://127.0.0.1", "http://example.com", "https://example.com"
 // buffer_size ej: 1024
 // concurrency_max Limitar la concurrencia de conexiones simultáneas ej 100
-func New(models []*model.Object, buffer_size, concurrency_max int, allowed_origins ...string) *WebSocket {
+func New(models []model.Object, buffer_size, concurrency_max int, allowed_origins ...string) *WebSocket {
 
 	ws := WebSocket{
 		upgrader: &websocket.Upgrader{
