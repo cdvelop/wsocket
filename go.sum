@@ -1,7 +1,7 @@
-github.com/cdvelop/cutkey v0.0.14 h1:wERNkB6dOabEeOsnF/vpzUwGTyT/TZKWlps97dfpFsE=
-github.com/cdvelop/cutkey v0.0.14/go.mod h1:BwQW/eSZ1q93Vh4g3pN5OPAKyOTVBrX/yOjkOVMc14U=
-github.com/cdvelop/model v0.0.22 h1:PvoVVZlMi8oHrp7pcDcnmi1hTkhWu+EaeSqBF+YFBB4=
-github.com/cdvelop/model v0.0.22/go.mod h1:Z68GbCq8aw1vGIGMfsXoIWd9IyXOg0NW5+f0gRvlc7o=
+github.com/cdvelop/cutkey v0.0.15 h1:6Hldq40r2HePvFs8lz4UZWLdYFOeGwcyrY0QjmuLrkc=
+github.com/cdvelop/cutkey v0.0.15/go.mod h1:fGZrvdux+DtedGxyMgzsnzYAbtaw71+qo4yVs1zdx1s=
+github.com/cdvelop/model v0.0.23 h1:l18HzELuuwZvViLP/KVl1/PhyyHBmHsijggxlEoPeJA=
+github.com/cdvelop/model v0.0.23/go.mod h1:3IL/1K4zYj+Yhvye1ucimMvN5AqIeTeJgnWdved44LU=
 github.com/fxamacker/cbor/v2 v2.4.0 h1:ri0ArlOR+5XunOP8CRUowT0pSJOwhW098ZCUyskZD88=
 github.com/fxamacker/cbor/v2 v2.4.0/go.mod h1:TA1xS00nchWmaBnEIxPSE5oHLuJBAVvqrtAnWBwBCVo=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
