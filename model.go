@@ -29,7 +29,7 @@ type WebSocket struct {
 	// canal que avisa el cierre de las conexiones
 	CLOSED_CONNECTION chan *model.User
 
-	cutkey.Cut
+	*cutkey.Cut
 }
 
 type BinaryHandler interface {

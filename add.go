@@ -38,7 +38,7 @@ func New(models []model.Object, buffer_size, concurrency_max int, allowed_origin
 		REQUESTS_OUT:        make(chan *model.Request),
 		CLOSED_CONNECTION:   make(chan *model.User),
 
-		Cut: *cutkey.Add(models...),
+		Cut: cutkey.Add(models...),
 	}
 
 	ws.StartBroadcasting(ws.REQUESTS_OUT)
