@@ -2,7 +2,7 @@ module github.com/cdvelop/wsocket
 
 go 1.20
 
-require github.com/cdvelop/model v0.0.25
+require github.com/cdvelop/model v0.0.26
 
 require (
 	github.com/cdvelop/cutkey v0.0.17
